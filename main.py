@@ -1,5 +1,3 @@
-#!/usr/bin/env python3
-# -*- coding: utf-8 -*-
 """论文查重程序 · 命令行入口。
 
 用法::

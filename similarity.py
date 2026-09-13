@@ -1,4 +1,3 @@
-# -*- coding: utf-8 -*-
 """相似度计算：最长公共子序列（LCS）与论文重复率。
 
 调用层级：``plagiarism_rate`` → ``similarity_report`` → ``lcs_length``。

@@ -1,4 +1,3 @@
-# -*- coding: utf-8 -*-
 """文本归一化：把原始文本压成可比较的字符序列。"""
 
 from __future__ import annotations

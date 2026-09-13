@@ -1,5 +1,3 @@
-#!/usr/bin/env python3
-# -*- coding: utf-8 -*-
 """性能剖析与性能分析图生成工具。
 
 用法::
