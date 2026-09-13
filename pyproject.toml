@@ -1,0 +1,21 @@
+[tool.pylint.main]
+py-version = "3.10"
+ignore = ["tests", "docs", "_wheels", "_tmp", ".venv"]
+
+[tool.pylint.format]
+max-line-length = 100
+
+[tool.pylint."messages control"]
+disable = [
+    # 纯数据类（dataclass）只有字段没有方法，这条检查对它们没有意义
+    "too-few-public-methods",
+    # matplotlib / pstats 属于可选或按需导入，故意放在函数内部
+    "import-outside-toplevel",
+]
+
+[tool.pylint.reports]
+score = true
+
+[tool.pytest.ini_options]
+testpaths = ["tests"]
+addopts = "-q"

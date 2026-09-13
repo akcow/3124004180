@@ -4,12 +4,10 @@
 
 用法::
 
-    python main.py <原文文件绝对路径> <抄袭版论文文件绝对路径> <答案文件绝对路径> [选项]
+    python main.py <原文文件> <抄袭版文件> <答案文件> [--metric ...] [--keep-latin] [--verbose]
 
-程序从命令行给出的两个路径读取文本，计算抄袭版相对原文的重复率，
-并把结果写入第三个路径指定的答案文件。成功时不产生任何标准输出。
-
-本模块只做参数解析与流程编排，不包含任何算法实现。
+成功时不产生任何标准输出；--verbose 的信息走标准错误，答案只写入文件。
+本模块只做参数解析与流程编排，不含算法。
 """
 
 from __future__ import annotations
@@ -20,14 +18,9 @@ import time
 
 from io_utils import DecodedText, read_text_file, write_answer
 from preprocess import normalize
-from similarity import (
-    METRIC_ORIG_BASE,
-    METRICS,
-    SimilarityReport,
-    similarity_report,
-)
+from similarity import METRIC_ORIG_BASE, METRICS, SimilarityReport, similarity_report
 
-#: 参数错误或文件不可用时的退出码。
+#: 参数错误或文件不可用时的退出码
 EXIT_USAGE_ERROR = 2
 
 
@@ -35,17 +28,8 @@ class InputError(Exception):
     """输入文件不可用（不存在、是目录、无权限等）。"""
 
 
-# ------------------------------------------------------------------ 参数解析
-
-
 def build_parser() -> argparse.ArgumentParser:
-    """构造命令行参数解析器。
-
-    三个位置参数是题目规定的调用契约，顺序固定、不可省略。
-
-    Returns:
-        配置好的 :class:`argparse.ArgumentParser`。
-    """
+    """构造参数解析器。前三个位置参数是题目规定的调用契约。"""
     parser = argparse.ArgumentParser(
         prog="main.py",
         description="计算抄袭版论文相对原文的重复率。",
@@ -53,27 +37,13 @@ def build_parser() -> argparse.ArgumentParser:
     parser.add_argument("original", metavar="原文文件", help="论文原文的绝对路径")
     parser.add_argument("plagiarized", metavar="抄袭版文件", help="抄袭版论文的绝对路径")
     parser.add_argument("answer", metavar="答案文件", help="输出重复率的答案文件路径")
-    parser.add_argument(
-        "--metric",
-        choices=METRICS,
-        default=METRIC_ORIG_BASE,
-        help=f"重复率口径（默认 {METRIC_ORIG_BASE}）",
-    )
-    parser.add_argument(
-        "--keep-latin",
-        action="store_true",
-        help="归一化时一并保留拉丁字母，用于英文论文",
-    )
-    parser.add_argument(
-        "--verbose",
-        "-v",
-        action="store_true",
-        help="把中间信息打印到标准错误；答案文件不受影响",
-    )
+    parser.add_argument("--metric", choices=METRICS, default=METRIC_ORIG_BASE,
+                        help=f"重复率口径（默认 {METRIC_ORIG_BASE}）")
+    parser.add_argument("--keep-latin", action="store_true",
+                        help="归一化时一并保留拉丁字母，用于英文论文")
+    parser.add_argument("--verbose", "-v", action="store_true",
+                        help="把中间信息打印到标准错误；答案文件不受影响")
     return parser
-
-
-# ------------------------------------------------------------------ 错误处理
 
 
 def _describe_os_error(exc: OSError) -> str:
@@ -88,16 +58,13 @@ def _describe_os_error(exc: OSError) -> str:
 
 
 def _fail(message: str) -> int:
-    """打印一条友好错误信息并返回失败退出码（不抛异常、不打印 traceback）。"""
+    """打印一条友好错误信息并返回失败退出码，不抛异常。"""
     print(f"错误：{message}", file=sys.stderr)
     return EXIT_USAGE_ERROR
 
 
 def _configure_stderr() -> None:
-    """让标准错误在 GBK 控制台下也不会因编码问题抛异常。
-
-    只处理 stderr：正常路径下程序不向 stdout 写任何内容，答案只进文件。
-    """
+    """让标准错误在 GBK 控制台下也不会因编码问题抛异常。"""
     try:
         sys.stderr.reconfigure(encoding="utf-8", errors="replace")
     except (AttributeError, OSError):
@@ -106,14 +73,6 @@ def _configure_stderr() -> None:
 
 def _load_text(path: str, label: str, keep_latin: bool) -> tuple[str, DecodedText]:
     """读取并归一化一个输入文件。
-
-    Args:
-        path: 文件路径。
-        label: 用于错误提示的文件角色（如"原文"）。
-        keep_latin: 是否保留拉丁字母。
-
-    Returns:
-        ``(归一化后的文本, 解码元信息)``。
 
     Raises:
         InputError: 文件不可读。
@@ -125,12 +84,9 @@ def _load_text(path: str, label: str, keep_latin: bool) -> tuple[str, DecodedTex
     return normalize(decoded.text, keep_latin=keep_latin), decoded
 
 
-# ------------------------------------------------------------------ 主流程
-
-
 def _print_verbose(original_file: DecodedText, plagiarized_file: DecodedText,
                    report: SimilarityReport, elapsed: float) -> None:
-    """把中间信息打印到标准错误，便于排查问题（不污染答案文件）。"""
+    """把中间信息打印到标准错误，便于排查问题。"""
     lines = [
         f"原文    {original_file.size} 字节  编码 {original_file.encoding}"
         f"  归一化后 {report.original_length} 字",
@@ -166,14 +122,7 @@ def _run(args: argparse.Namespace) -> int:
 
 
 def main(argv: list[str] | None = None) -> int:
-    """程序入口。
-
-    Args:
-        argv: 命令行参数（不含程序名）。为 ``None`` 时取 ``sys.argv[1:]``。
-
-    Returns:
-        进程退出码：0 成功，2 参数或文件错误。
-    """
+    """程序入口。返回退出码：0 成功，2 参数或文件错误。"""
     _configure_stderr()
     args = build_parser().parse_args(argv)
     try:
@@ -181,8 +130,7 @@ def main(argv: list[str] | None = None) -> int:
     except InputError as exc:
         return _fail(str(exc))
     except Exception as exc:  # pylint: disable=broad-except
-        # 兜底：宁可给一句人话，也不要让评测看到 traceback 和异常退出。
-        # 这里刻意宽泛地捕获，是为了保证"任何输入都不异常退出"这一硬性要求。
+        # 兜底：宁可给一句人话，也不要让评测看到 traceback 和异常退出
         return _fail(f"未预期的错误：{type(exc).__name__}: {exc}")
 
 
