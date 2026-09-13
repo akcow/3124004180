@@ -1,0 +1,5 @@
+[flake8]
+max-line-length = 100
+# bench.py 为了 import 根目录模块，必须先改 sys.path，这一处的导入位置是刻意的
+per-file-ignores =
+    tools/bench.py: E402

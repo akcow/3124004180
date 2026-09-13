@@ -2,6 +2,8 @@
 
 一个用 Python 3 实现的论文查重程序：给定原文与经过增删改的抄袭版论文，计算抄袭版相对原文的**重复率**。
 
+[![tests](https://github.com/akcow/3124004180/actions/workflows/tests.yml/badge.svg)](https://github.com/akcow/3124004180/actions)
+
 ## 快速开始
 
 ```bash
@@ -45,9 +47,24 @@ python main.py text_files/orig.txt text_files/orig_0.8_del.txt out.txt
 
 ### 性能
 
-核心相似度计算使用**位并行 LCS**（Crochemore 等，2001）：把模式串的每个字符映射到大整数的某一位，从而把 O(n·m) 次 Python 层循环压缩成 O(n·m/64) 次大整数位运算。
+核心相似度计算使用**位并行 LCS**：把模式串的每个字符映射到大整数的某一位，从而把
+O(n·m) 次 Python 层循环压缩成 O(n·m/64) 次大整数位运算。实测 10 万字输入约 0.7 秒
+（朴素动态规划要数百秒）。
 
-性能改进的完整记录（剖析图、消耗最大的函数、改进前后对比）见 [`docs/perf/`](docs/perf/)。
+性能改进的完整记录（剖析图、消耗最大的函数、改进前后对比）见
+[`docs/performance.md`](docs/performance.md) 与 [`docs/perf/`](docs/perf/)。
+
+## 测试与质量
+
+| 指标 | 结果 |
+|---|---|
+| 单元测试 | 54 个用例全部通过 |
+| 语句覆盖率 | 100%（192 条语句） |
+| pylint | 10.00 / 10 |
+| flake8 | 零告警 |
+
+测试设计与充分性自评见 [`docs/test-report.md`](docs/test-report.md)。
+每次 push 都会由 GitHub Actions 自动跑全量测试与静态检查。
 
 ## 开发
 
@@ -60,7 +77,7 @@ python -m venv .venv
 .venv/Scripts/python -m pytest
 
 # 3. 静态检查（要求零警告）
-.venv/Scripts/python -m pylint main.py similarity.py preprocess.py io_utils.py
+.venv/Scripts/python -m pylint main.py similarity.py preprocess.py io_utils.py tools
 
 # 4. 生成性能分析图
 .venv/Scripts/python tools/profiling.py --tag before \
@@ -78,6 +95,7 @@ python -m venv .venv
 ├── io_utils.py              # 编码自适应读写
 ├── requirements-dev.txt     # 仅开发期依赖
 ├── plan.md                  # 开发计划
+├── .github/workflows/       # 每次 push 自动跑测试与静态检查
 ├── docs/
 │   ├── test-report.md       # 测试设计与充分性评估
 │   ├── performance.md       # 性能改进总结

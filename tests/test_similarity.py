@@ -109,6 +109,13 @@ def test_case12_matches_brute_force_reference():
         assert lcs_length(first, second) == expected
 
 
+def test_lcs_length_dp_empty_inputs():
+    """基线实现（lcs_length_dp）的空串早退分支也要覆盖。"""
+    assert lcs_length_dp("", "甲") == 0
+    assert lcs_length_dp("甲", "") == 0
+    assert lcs_length_dp("", "") == 0
+
+
 def test_case18_large_input_uses_chunked_estimation(monkeypatch):
     """用例 18：超出单元格预算时改走分块估计，结果仍落在合理区间。
 
