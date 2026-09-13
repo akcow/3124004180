@@ -1,0 +1,41 @@
+# ---- Python ----
+__pycache__/
+*.py[cod]
+*$py.class
+*.egg-info/
+.pytest_cache/
+.mypy_cache/
+
+# ---- 测试覆盖率产物 ----
+.coverage
+.coverage.*
+htmlcov/
+
+# ---- 虚拟环境 ----
+.venv/
+venv/
+env/
+
+# ---- 构建产物 ----
+build/
+dist/
+*.spec
+
+# ---- 编辑器 / 操作系统 ----
+.idea/
+.vscode/
+*.swp
+*~
+Thumbs.db
+Desktop.ini
+
+# ---- 工作区根目录下的临时草稿文件（下划线开头）----
+/_*
+
+# ---- 智能体工作目录（非项目内容）----
+.workbuddy/
+
+# ---- 运行产物：答案文件由命令行指定，不属于源码 ----
+/out.txt
+/answer.txt
+/result.txt
