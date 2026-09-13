@@ -40,3 +40,7 @@ Desktop.ini
 /out.txt
 /answer.txt
 /result.txt
+# 本地编辑、不提交到仓库的文件
+docs/blog.md
+docs/coverage.png
+3124004180/
