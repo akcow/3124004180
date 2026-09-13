@@ -18,4 +18,16 @@ score = true
 
 [tool.pytest.ini_options]
 testpaths = ["tests"]
-addopts = "-q"
+# 临时根目录放在仓库内：默认的 %TEMP% 位置在受限环境下会被拒绝访问
+addopts = "-q --basetemp=.pytest_tmp"
+# 让测试能直接 import 项目根目录下的模块
+pythonpath = ["."]
+
+[tool.coverage.run]
+source = ["."]
+omit = ["tests/*", "tools/*", "docs/*", ".venv/*", ".pytest_tmp/*", "_*"]
+
+[tool.coverage.report]
+# 覆盖率统计不把 __main__ 入口块算作未覆盖
+exclude_also = ["if __name__ == .__main__.:"]
+show_missing = true
