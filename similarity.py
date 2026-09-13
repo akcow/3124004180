@@ -48,7 +48,7 @@ class SimilarityReport:
 def lcs_length_dp(original: str, plagiarized: str) -> int:
     """动态规划求 LCS 长度，O(n·m) 时间、O(min(n, m)) 空间。
 
-    这是性能基线实现，同时作为其他实现的正确性参照。
+    性能基线实现，同时作为位并行版本的正确性参照。
     """
     if not original or not plagiarized:
         return 0
@@ -69,9 +69,35 @@ def lcs_length_dp(original: str, plagiarized: str) -> int:
     return previous[width]
 
 
+def lcs_length_bitparallel(original: str, plagiarized: str) -> int:
+    """位并行求 LCS 长度，O(n·m/64) 次大整数位运算。
+
+    朴素 DP 每格都要执行一次 Python 层循环，瓶颈在解释器开销；这里把较短串
+    的 m 个字符分别映射到大整数的第 i 位，于是对每个字符的「整列更新」可以
+    合并成一次 ``(state + u) | (state - u)`` 大整数运算，等价于同时处理 64 位。
+    """
+    if not original or not plagiarized:
+        return 0
+
+    if len(original) > len(plagiarized):
+        original, plagiarized = plagiarized, original
+
+    size = len(original)
+    mask = (1 << size) - 1
+    char_bits: dict[str, int] = {}
+    for index, char in enumerate(original):
+        char_bits[char] = char_bits.get(char, 0) | (1 << index)
+
+    state = mask
+    for char in plagiarized:
+        matched = state & char_bits.get(char, 0)
+        state = ((state + matched) | (state - matched)) & mask
+    return size - bin(state & mask).count("1")
+
+
 def lcs_length(original: str, plagiarized: str) -> int:
     """求 LCS 长度的唯一收口点，所有调用方都经由这里。"""
-    return lcs_length_dp(original, plagiarized)
+    return lcs_length_bitparallel(original, plagiarized)
 
 
 def is_exact_feasible(original: str, plagiarized: str) -> bool:
