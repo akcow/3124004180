@@ -16,14 +16,20 @@ import re
 #: 是因为前者只需扫一遍字符串，后者要扫描多遍——这是一个有意的性能选择。
 _CJK_PATTERN = re.compile(r"[\u4e00-\u9fff\u3400-\u4dbf]")
 
+#: 汉字 + 拉丁字母。用于需要支持英文论文的场景（``--keep-latin``）。
+_CJK_LATIN_PATTERN = re.compile(r"[\u4e00-\u9fff\u3400-\u4dbfA-Za-z]")
 
-def normalize(text: str) -> str:
-    """把任意文本压成只含汉字的字符串。
+
+def normalize(text: str, keep_latin: bool = False) -> str:
+    """把任意文本压成可比较的字符序列。
 
     Args:
         text: 原始文本，可以是任意内容。
+        keep_latin: 为 ``True`` 时同时保留拉丁字母（用于英文论文）；
+            默认为 ``False``，只保留汉字。
 
     Returns:
-        仅由汉字组成的字符串；若原文没有任何汉字，返回空串。
+        归一化后的字符串；若原文没有任何有效字符，返回空串。
     """
-    return "".join(_CJK_PATTERN.findall(text))
+    pattern = _CJK_LATIN_PATTERN if keep_latin else _CJK_PATTERN
+    return "".join(pattern.findall(text))
