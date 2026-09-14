@@ -43,4 +43,6 @@ Desktop.ini
 # 本地编辑、不提交到仓库的文件
 docs/blog.md
 docs/coverage.png
+docs/perf/time-log.md
 3124004180/
+plan.md
